@@ -1,5 +1,7 @@
 package com.example.pinchbackend.controller;
 
+import com.example.pinchbackend.dto.request.LoginRequest;
+import com.example.pinchbackend.dto.response.LoginResponse;
 import com.example.pinchbackend.dto.request.RegisterRequest;
 import com.example.pinchbackend.service.AuthService;
 import jakarta.validation.Valid;
@@ -22,5 +24,10 @@ public class AuthController {
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }
