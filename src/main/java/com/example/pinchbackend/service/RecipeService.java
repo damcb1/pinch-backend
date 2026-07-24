@@ -6,6 +6,8 @@ import com.example.pinchbackend.dto.response.RecipeResponse;
 import com.example.pinchbackend.entity.*;
 import com.example.pinchbackend.entity.Origin;
 import com.example.pinchbackend.entity.SourcePlatform;
+import com.example.pinchbackend.exception.AccessDeniedException;
+import com.example.pinchbackend.exception.RecipeNotFoundException;
 import com.example.pinchbackend.repository.RecipeRepository;
 import com.example.pinchbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,5 +74,16 @@ public class RecipeService {
                 ingredients,
                 recipe.getSteps()
         );
+    }
+
+    public RecipeResponse getById(Integer id, String userEmail) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(id));
+
+        if (!recipe.getAuthor().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException();
+        }
+
+        return toResponse(recipe);
     }
 }
