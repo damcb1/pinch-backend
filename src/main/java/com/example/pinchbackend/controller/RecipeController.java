@@ -2,6 +2,7 @@ package com.example.pinchbackend.controller;
 
 import com.example.pinchbackend.dto.request.RecipeRequest;
 import com.example.pinchbackend.dto.response.RecipeResponse;
+import com.example.pinchbackend.dto.response.RecipeSummaryResponse;
 import com.example.pinchbackend.security.CustomUserDetails;
 import com.example.pinchbackend.service.RecipeService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/recipes")
@@ -53,5 +56,12 @@ public class RecipeController {
     ) {
         recipeService.delete(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RecipeSummaryResponse>> getAll(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(recipeService.getAllForUser(userDetails.getUsername()));
     }
 }
