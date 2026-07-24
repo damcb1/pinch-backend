@@ -45,4 +45,13 @@ public class RecipeController {
         RecipeResponse updated = recipeService.update(id, request, userDetails.getUsername());
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        recipeService.delete(id, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
 }
