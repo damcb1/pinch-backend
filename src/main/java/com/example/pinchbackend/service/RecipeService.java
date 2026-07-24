@@ -10,6 +10,7 @@ import com.example.pinchbackend.exception.AccessDeniedException;
 import com.example.pinchbackend.exception.RecipeNotFoundException;
 import com.example.pinchbackend.repository.RecipeRepository;
 import com.example.pinchbackend.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -85,5 +86,38 @@ public class RecipeService {
         }
 
         return toResponse(recipe);
+    }
+
+    @Transactional
+    public RecipeResponse update(Integer id, RecipeRequest request, String userEmail) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(id));
+
+        if (!recipe.getAuthor().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException();
+        }
+
+        recipe.setTitle(request.getTitle());
+        recipe.setDescription(request.getDescription());
+        recipe.setSourceUrl(request.getSourceUrl());
+        recipe.setImageUrl(request.getImageUrl());
+        recipe.setTimeMinutes(request.getTimeMinutes());
+        recipe.setServings(request.getServings());
+        recipe.setCuisine(request.getCuisine());
+        recipe.setDifficulty(request.getDifficulty());
+        recipe.setSteps(request.getSteps());
+
+        recipe.getIngredients().clear();
+        request.getIngredients().forEach(ir -> {
+            Ingredient ing = new Ingredient();
+            ing.setQty(ir.getQty());
+            ing.setUnit(ir.getUnit());
+            ing.setName(ir.getName());
+            ing.setRecipe(recipe);
+            recipe.getIngredients().add(ing);
+        });
+
+        Recipe saved = recipeRepository.save(recipe);
+        return toResponse(saved);
     }
 }
