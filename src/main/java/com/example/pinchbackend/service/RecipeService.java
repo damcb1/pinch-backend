@@ -120,4 +120,16 @@ public class RecipeService {
         Recipe saved = recipeRepository.save(recipe);
         return toResponse(saved);
     }
+
+    @Transactional
+    public void delete(Integer id, String userEmail) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(id));
+
+        if (!recipe.getAuthor().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException();
+        }
+
+        recipeRepository.delete(recipe);
+    }
 }
