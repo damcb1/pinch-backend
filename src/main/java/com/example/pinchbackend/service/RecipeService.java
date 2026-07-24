@@ -3,6 +3,7 @@ package com.example.pinchbackend.service;
 import com.example.pinchbackend.dto.request.RecipeRequest;
 import com.example.pinchbackend.dto.response.IngredientResponse;
 import com.example.pinchbackend.dto.response.RecipeResponse;
+import com.example.pinchbackend.dto.response.RecipeSummaryResponse;
 import com.example.pinchbackend.entity.*;
 import com.example.pinchbackend.entity.Origin;
 import com.example.pinchbackend.entity.SourcePlatform;
@@ -131,5 +132,20 @@ public class RecipeService {
         }
 
         recipeRepository.delete(recipe);
+    }
+
+    public List<RecipeSummaryResponse> getAllForUser(String userEmail) {
+        return recipeRepository.findByAuthorEmailOrderByCreatedAtDesc(userEmail).stream()
+                .map(r -> new RecipeSummaryResponse(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getImageUrl(),
+                        r.getTimeMinutes(),
+                        r.getServings(),
+                        r.getCuisine(),
+                        r.getDifficulty(),
+                        r.getOrigin()
+                ))
+                .toList();
     }
 }
