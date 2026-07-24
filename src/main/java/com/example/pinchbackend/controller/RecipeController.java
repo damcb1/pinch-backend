@@ -35,4 +35,14 @@ public class RecipeController {
         RecipeResponse recipe = recipeService.getById(id, userDetails.getUsername());
         return ResponseEntity.ok(recipe);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RecipeResponse> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody RecipeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        RecipeResponse updated = recipeService.update(id, request, userDetails.getUsername());
+        return ResponseEntity.ok(updated);
+    }
 }
