@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "recipes")
@@ -42,6 +43,9 @@ public class Recipe {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User author;
@@ -56,4 +60,10 @@ public class Recipe {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags;
+
+    @ElementCollection
+    @CollectionTable(name = "recipe_steps", joinColumns = @JoinColumn(name = "recipe_id"))
+    @OrderColumn(name = "step_order")
+    @Column(name = "text", columnDefinition = "TEXT")
+    private List<String> steps = new ArrayList<>();
 }
