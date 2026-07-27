@@ -5,8 +5,6 @@ import com.example.pinchbackend.dto.response.IngredientResponse;
 import com.example.pinchbackend.dto.response.RecipeResponse;
 import com.example.pinchbackend.dto.response.RecipeSummaryResponse;
 import com.example.pinchbackend.entity.*;
-import com.example.pinchbackend.entity.Origin;
-import com.example.pinchbackend.entity.SourcePlatform;
 import com.example.pinchbackend.exception.AccessDeniedException;
 import com.example.pinchbackend.exception.RecipeNotFoundException;
 import com.example.pinchbackend.repository.RecipeRepository;
@@ -134,18 +132,37 @@ public class RecipeService {
         recipeRepository.delete(recipe);
     }
 
-    public List<RecipeSummaryResponse> getAllForUser(String userEmail) {
+    private RecipeSummaryResponse toSummary(Recipe r) {
+        return new RecipeSummaryResponse(
+                r.getId(),
+                r.getTitle(),
+                r.getImageUrl(),
+                r.getTimeMinutes(),
+                r.getServings(),
+                r.getCuisine(),
+                r.getDifficulty(),
+                r.getOrigin()
+        );
+    }
+
+    public List<RecipeSummaryResponse> search(String userEmail, String q, String cuisine, Integer maxTime, Origin origin) {
+        String query = (q == null) ? null : q.trim().toLowerCase();
+
         return recipeRepository.findByAuthorEmailOrderByCreatedAtDesc(userEmail).stream()
-                .map(r -> new RecipeSummaryResponse(
-                        r.getId(),
-                        r.getTitle(),
-                        r.getImageUrl(),
-                        r.getTimeMinutes(),
-                        r.getServings(),
-                        r.getCuisine(),
-                        r.getDifficulty(),
-                        r.getOrigin()
-                ))
+                .filter(r -> query == null || query.isEmpty() || matchesQuery(r, query))
+                .filter(r -> cuisine == null || cuisine.equalsIgnoreCase(r.getCuisine()))
+                .filter(r -> maxTime == null || (r.getTimeMinutes() != null && r.getTimeMinutes() <= maxTime))
+                .filter(r -> origin == null || origin.equals(r.getOrigin()))
+                .map(this::toSummary)
                 .toList();
+    }
+
+    private boolean matchesQuery(Recipe r, String query) {
+        if (r.getTitle() != null && r.getTitle().toLowerCase().contains(query)) {
+            return true;
+        }
+
+        return r.getIngredients() != null && r.getIngredients().stream()
+                .anyMatch(i -> i.getName() != null && i.getName().toLowerCase().contains(query));
     }
 }
