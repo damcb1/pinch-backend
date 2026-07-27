@@ -3,6 +3,7 @@ package com.example.pinchbackend.controller;
 import com.example.pinchbackend.dto.request.RecipeRequest;
 import com.example.pinchbackend.dto.response.RecipeResponse;
 import com.example.pinchbackend.dto.response.RecipeSummaryResponse;
+import com.example.pinchbackend.entity.Difficulty;
 import com.example.pinchbackend.entity.Origin;
 import com.example.pinchbackend.security.CustomUserDetails;
 import com.example.pinchbackend.service.RecipeService;
@@ -64,11 +65,13 @@ public class RecipeController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String cuisine,
+            @RequestParam(required = false) Integer minTime,
             @RequestParam(required = false) Integer maxTime,
-            @RequestParam(required = false) Origin origin
+            @RequestParam(required = false) Origin origin,
+            @RequestParam(required = false)Difficulty difficulty
             ) {
         return ResponseEntity.ok(
-                recipeService.search(userDetails.getUsername(), q, cuisine, maxTime, origin)
+                recipeService.search(userDetails.getUsername(), q, cuisine, minTime, maxTime, origin, difficulty)
         );
     }
 }

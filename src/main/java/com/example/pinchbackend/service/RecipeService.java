@@ -145,14 +145,16 @@ public class RecipeService {
         );
     }
 
-    public List<RecipeSummaryResponse> search(String userEmail, String q, String cuisine, Integer maxTime, Origin origin) {
+    public List<RecipeSummaryResponse> search(String userEmail, String q, String cuisine, Integer minTime, Integer maxTime, Origin origin, Difficulty difficulty) {
         String query = (q == null) ? null : q.trim().toLowerCase();
 
         return recipeRepository.findByAuthorEmailOrderByCreatedAtDesc(userEmail).stream()
                 .filter(r -> query == null || query.isEmpty() || matchesQuery(r, query))
                 .filter(r -> cuisine == null || cuisine.equalsIgnoreCase(r.getCuisine()))
+                .filter(r -> minTime == null || (r.getTimeMinutes() != null && r.getTimeMinutes() >= minTime))
                 .filter(r -> maxTime == null || (r.getTimeMinutes() != null && r.getTimeMinutes() <= maxTime))
                 .filter(r -> origin == null || origin.equals(r.getOrigin()))
+                .filter(r -> difficulty == null || difficulty.equals(r.getDifficulty()))
                 .map(this::toSummary)
                 .toList();
     }
