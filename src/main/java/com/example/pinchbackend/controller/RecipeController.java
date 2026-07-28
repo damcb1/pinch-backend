@@ -42,6 +42,15 @@ public class RecipeController {
         return ResponseEntity.ok(preview);
     }
 
+    @PostMapping("/import/confirm")
+    public ResponseEntity<RecipeResponse> confirmImport(
+            @Valid @RequestBody RecipeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        RecipeResponse created = recipeService.createImported(request, userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RecipeResponse> getById(
             @PathVariable Integer id,
