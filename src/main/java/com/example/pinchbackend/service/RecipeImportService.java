@@ -1,7 +1,6 @@
 package com.example.pinchbackend.service;
 
 import com.example.pinchbackend.dto.response.ImportPreviewResponse;
-import com.example.pinchbackend.dto.response.IngredientResponse;
 import com.example.pinchbackend.exception.RecipeImportException;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
 
 public class RecipeImportService {
     private final ObjectMapper objectMapper;
+    private final RecipeAiService recipeAiService;
 
     public ImportPreviewResponse importFromUrl(String url) {
         JsonNode recipeNode = fetchRecipeJsonLd(url);
@@ -33,6 +33,10 @@ public class RecipeImportService {
             );
         }
         return mapToPreview(recipeNode, url);
+    }
+
+    public ImportPreviewResponse importFromText(String text) {
+        return recipeAiService.structureFromText(text);
     }
 
     private JsonNode fetchRecipeJsonLd(String url) {
@@ -83,11 +87,11 @@ public class RecipeImportService {
         JsonNode type = node.get("@type");
         if (type == null)
             return false;
-        if (type.isTextual())
-            return type.asText().equalsIgnoreCase("Recipe");
+        if (type.isString())
+            return type.asString().equalsIgnoreCase("Recipe");
         if (type.isArray()) {
             for (JsonNode t : type) {
-                if (t.asText().equalsIgnoreCase("Recipe"))
+                if (t.asString().equalsIgnoreCase("Recipe"))
                     return true;
             }
         }
@@ -95,6 +99,7 @@ public class RecipeImportService {
     }
 
     private ImportPreviewResponse mapToPreview(JsonNode r, String sourceUrl) {
+        List<String> ingredientLines = extractIngredientLines(r);
         return new ImportPreviewResponse(
                 text(r, "name"),
                 sourceUrl,
@@ -102,19 +107,21 @@ public class RecipeImportService {
                 parseTimeMinutes(r),
                 parseServings(r),
                 parseCuisine(r),
-                parseIngredients(r),
+                recipeAiService.structureIngredients(ingredientLines),
                 parseSteps(r)
         );
     }
 
     private String text(JsonNode node, String field) {
         JsonNode v = node.get(field);
-        return (v != null && v.isValueNode()) ? v.asText() : null;
+        return (v != null && v.isValueNode()) ? v.asString() : null;
     }
 
     private JsonNode firstOrSelf(JsonNode node) {
-        if (node == null) return null;
-        if (node.isArray()) return node.size() > 0 ? node.get(0) : null;
+        if (node == null)
+            return null;
+        if (node.isArray())
+            return node.size() > 0 ? node.get(0) : null;
         return node;
     }
 
@@ -122,7 +129,7 @@ public class RecipeImportService {
         JsonNode img = firstOrSelf(r.get("image"));
         if (img == null)
             return null;
-        return img.isTextual() ? img.asText() : text(img, "url");
+        return img.isString() ? img.asString() : text(img, "url");
     }
 
     private Integer parseTimeMinutes(JsonNode r) {
@@ -149,35 +156,35 @@ public class RecipeImportService {
         JsonNode y = firstOrSelf(r.get("recipeYield"));
         if (y == null)
             return null;
-        Matcher m = Pattern.compile("\\d+").matcher(y.asText());
+        Matcher m = Pattern.compile("\\d+").matcher(y.asString());
         return m.find() ? Integer.parseInt(m.group()) : null;
     }
 
     private String parseCuisine(JsonNode r) {
         JsonNode c = firstOrSelf(r.get("recipeCuisine"));
-        return c == null ? null : c.asText();
+        return c == null ? null : c.asString();
     }
 
-    private List<IngredientResponse> parseIngredients(JsonNode r) {
-        List<IngredientResponse> out = new ArrayList<>();
+    private List<String> extractIngredientLines(JsonNode r) {
+        List<String> lines = new ArrayList<>();
         JsonNode ing = r.get("recipeIngredient");
         if (ing != null && ing.isArray()) {
             for (JsonNode line : ing) {
-                String value = line.asText().trim();
+                String value = line.asString().trim();
                 if (!value.isEmpty()) {
-                    out.add(new IngredientResponse(null, null, value));
+                    lines.add(value);
                 }
             }
         }
-        return out;
+        return lines;
     }
 
     private List<String> parseSteps(JsonNode r) {
         List<String> steps = new ArrayList<>();
         JsonNode instr = r.get("recipeInstructions");
         if (instr == null) return steps;
-        if (instr.isTextual()) {
-            addStep(steps, instr.asText());
+        if (instr.isString()) {
+            addStep(steps, instr.asString());
         } else if (instr.isArray()) {
             collectSteps(instr, steps);
         }
@@ -186,14 +193,14 @@ public class RecipeImportService {
 
     private void collectSteps(JsonNode arr, List<String> steps) {
         for (JsonNode el : arr) {
-            if (el.isTextual()) {
-                addStep(steps, el.asText());
+            if (el.isString()) {
+                addStep(steps, el.asString());
             } else if (el.isObject()) {
-                String type = el.path("@type").asText("");
+                String type = el.path("@type").asString("");
                 if (type.equalsIgnoreCase("HowToSection")) {
                     collectSteps(el.path("itemListElement"), steps);
                 } else {
-                    addStep(steps, el.path("text").asText(""));
+                    addStep(steps, el.path("text").asString(""));
                 }
             }
         }

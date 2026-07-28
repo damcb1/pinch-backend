@@ -6,10 +6,11 @@ import com.example.pinchbackend.dto.response.RecipeSummaryResponse;
 import com.example.pinchbackend.entity.Difficulty;
 import com.example.pinchbackend.entity.Origin;
 import com.example.pinchbackend.security.CustomUserDetails;
+import com.example.pinchbackend.service.RecipeImportService;
 import com.example.pinchbackend.service.RecipeService;
 import com.example.pinchbackend.dto.request.ImportUrlRequest;
 import com.example.pinchbackend.dto.response.ImportPreviewResponse;
-import com.example.pinchbackend.service.RecipeImportService;
+import com.example.pinchbackend.dto.request.ImportTextRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,12 @@ public class RecipeController {
     ) {
         RecipeResponse created = recipeService.createImported(request, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/import/text")
+    public ResponseEntity<ImportPreviewResponse> importFromText(
+            @Valid @RequestBody ImportTextRequest request) {
+        return ResponseEntity.ok(recipeImportService.importFromText(request.getText()));
     }
 
     @GetMapping("/{id}")
