@@ -21,9 +21,6 @@ public class Recipe {
     @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     private String sourceUrl;
 
     @Enumerated(EnumType.STRING)

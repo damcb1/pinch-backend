@@ -24,12 +24,19 @@ public class RecipeService {
     private final UserRepository userRepository;
 
     public RecipeResponse create(RecipeRequest request, String userEmail) {
+        return save(request, userEmail, Origin.MANUAL, SourcePlatform.MANUAL);
+    }
+
+    public RecipeResponse createImported(RecipeRequest request, String userEmail) {
+        return save(request, userEmail, Origin.IMPORTED, SourcePlatform.WEB);
+    }
+
+    private RecipeResponse save(RecipeRequest request, String userEmail, Origin origin, SourcePlatform sourcePlatform) {
         User author = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + userEmail));
 
         Recipe recipe = new Recipe();
         recipe.setTitle(request.getTitle());
-        recipe.setDescription(request.getDescription());
         recipe.setSourceUrl(request.getSourceUrl());
         recipe.setImageUrl(request.getImageUrl());
         recipe.setTimeMinutes(request.getTimeMinutes());
@@ -37,8 +44,8 @@ public class RecipeService {
         recipe.setCuisine(request.getCuisine());
         recipe.setDifficulty(request.getDifficulty());
         recipe.setSteps(request.getSteps());
-        recipe.setOrigin(Origin.MANUAL);
-        recipe.setSourcePlatform(SourcePlatform.MANUAL);
+        recipe.setOrigin(origin);
+        recipe.setSourcePlatform(sourcePlatform);
         recipe.setAuthor(author);
 
         List<Ingredient> ingredients = request.getIngredients().stream().map(ir -> {
@@ -63,7 +70,6 @@ public class RecipeService {
         return new RecipeResponse(
                 recipe.getId(),
                 recipe.getTitle(),
-                recipe.getDescription(),
                 recipe.getSourceUrl(),
                 recipe.getImageUrl(),
                 recipe.getTimeMinutes(),
@@ -97,7 +103,6 @@ public class RecipeService {
         }
 
         recipe.setTitle(request.getTitle());
-        recipe.setDescription(request.getDescription());
         recipe.setSourceUrl(request.getSourceUrl());
         recipe.setImageUrl(request.getImageUrl());
         recipe.setTimeMinutes(request.getTimeMinutes());

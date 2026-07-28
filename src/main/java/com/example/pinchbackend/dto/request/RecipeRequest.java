@@ -18,8 +18,6 @@ public class RecipeRequest {
     @Size(max = 150, message = "El título no puede superar los 150 caracteres")
     private String title;
 
-    private String description;
-
     private String sourceUrl;
 
     private String imageUrl;
