@@ -7,6 +7,9 @@ import com.example.pinchbackend.entity.Difficulty;
 import com.example.pinchbackend.entity.Origin;
 import com.example.pinchbackend.security.CustomUserDetails;
 import com.example.pinchbackend.service.RecipeService;
+import com.example.pinchbackend.dto.request.ImportUrlRequest;
+import com.example.pinchbackend.dto.response.ImportPreviewResponse;
+import com.example.pinchbackend.service.RecipeImportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import java.util.List;
 
 public class RecipeController {
     private final RecipeService recipeService;
+    private final RecipeImportService recipeImportService;
 
     @PostMapping
     public ResponseEntity<RecipeResponse> create(
@@ -30,6 +34,12 @@ public class RecipeController {
     ) {
         RecipeResponse created = recipeService.create(request, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ImportPreviewResponse> importFromUrl(@Valid @RequestBody ImportUrlRequest request) {
+        ImportPreviewResponse preview = recipeImportService.importFromUrl(request.getUrl());
+        return ResponseEntity.ok(preview);
     }
 
     @GetMapping("/{id}")

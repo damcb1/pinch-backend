@@ -29,7 +29,6 @@ public class RecipeService {
 
         Recipe recipe = new Recipe();
         recipe.setTitle(request.getTitle());
-        recipe.setDescription(request.getDescription());
         recipe.setSourceUrl(request.getSourceUrl());
         recipe.setImageUrl(request.getImageUrl());
         recipe.setTimeMinutes(request.getTimeMinutes());
@@ -63,7 +62,6 @@ public class RecipeService {
         return new RecipeResponse(
                 recipe.getId(),
                 recipe.getTitle(),
-                recipe.getDescription(),
                 recipe.getSourceUrl(),
                 recipe.getImageUrl(),
                 recipe.getTimeMinutes(),
@@ -97,7 +95,6 @@ public class RecipeService {
         }
 
         recipe.setTitle(request.getTitle());
-        recipe.setDescription(request.getDescription());
         recipe.setSourceUrl(request.getSourceUrl());
         recipe.setImageUrl(request.getImageUrl());
         recipe.setTimeMinutes(request.getTimeMinutes());
