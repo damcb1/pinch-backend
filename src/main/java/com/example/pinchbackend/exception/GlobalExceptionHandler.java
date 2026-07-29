@@ -61,4 +61,10 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(HttpStatus.UNPROCESSABLE_CONTENT.value(), ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error);
     }
+
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFile(InvalidFileException ex) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
+        return ResponseEntity.badRequest().body(error);
+    }
 }
