@@ -22,6 +22,7 @@ import java.util.List;
 public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
+    private final FileUploadService fileUploadService;
 
     public RecipeResponse create(RecipeRequest request, String userEmail) {
         return save(request, userEmail, Origin.MANUAL, SourcePlatform.MANUAL);
@@ -102,6 +103,8 @@ public class RecipeService {
             throw new AccessDeniedException();
         }
 
+        String oldImageUrl = recipe.getImageUrl();
+
         recipe.setTitle(request.getTitle());
         recipe.setSourceUrl(request.getSourceUrl());
         recipe.setImageUrl(request.getImageUrl());
@@ -122,6 +125,9 @@ public class RecipeService {
         });
 
         Recipe saved = recipeRepository.save(recipe);
+        if (oldImageUrl != null && !oldImageUrl.equals(request.getImageUrl())) {
+            fileUploadService.deleteByUrl(oldImageUrl);
+        }
         return toResponse(saved);
     }
 
@@ -135,6 +141,7 @@ public class RecipeService {
         }
 
         recipeRepository.delete(recipe);
+        fileUploadService.deleteByUrl(recipe.getImageUrl());
     }
 
     private RecipeSummaryResponse toSummary(Recipe r) {
