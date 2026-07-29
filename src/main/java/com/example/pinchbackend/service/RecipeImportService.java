@@ -98,7 +98,7 @@ public class RecipeImportService {
         return false;
     }
 
-    private ImportPreviewResponse mapToPreview(JsonNode r, String sourceUrl) {
+    ImportPreviewResponse mapToPreview(JsonNode r, String sourceUrl) {
         List<String> ingredientLines = extractIngredientLines(r);
         return new ImportPreviewResponse(
                 text(r, "name"),
