@@ -15,7 +15,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
+
 public class FileUploadService {
 
     private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "webp", "gif");
@@ -26,6 +30,26 @@ public class FileUploadService {
 
     @Value("${app.upload.base-url}")
     private String baseUrl;
+
+    private static final Logger log = LoggerFactory.getLogger(FileUploadService.class);
+
+    public void deleteByUrl(String imageUrl) {
+        if (imageUrl == null) {
+            return;
+        }
+
+        String prefix = baseUrl + "/uploads/";
+        if (!imageUrl.startsWith(prefix)) {
+            return;
+        }
+
+        String filename = Paths.get(imageUrl.substring(prefix.length())).getFileName().toString();
+        try {
+            Files.deleteIfExists(Paths.get(uploadPath).resolve(filename));
+        } catch (IOException e) {
+            log.warn("No se pudo borrar la imagen del disco: {}", imageUrl, e);
+        }
+    }
 
     public FileUploadResponseDto upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
