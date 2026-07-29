@@ -8,12 +8,13 @@ import com.example.pinchbackend.entity.Recipe;
 import com.example.pinchbackend.entity.User;
 import com.example.pinchbackend.exception.AccessDeniedException;
 import com.example.pinchbackend.exception.RecipeNotFoundException;
+import com.example.pinchbackend.mapper.IngredientMapper;
+import com.example.pinchbackend.mapper.RecipeMapper;
 import com.example.pinchbackend.repository.RecipeRepository;
 import com.example.pinchbackend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,13 +35,18 @@ class RecipeServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
+    @Mock
+    private FileUploadService fileUploadService;
+
     private RecipeService recipeService;
 
     private User author;
 
     @BeforeEach
     void setUp() {
+        RecipeMapper recipeMapper = new RecipeMapper(new IngredientMapper());
+        recipeService = new RecipeService(recipeRepository, userRepository, fileUploadService, recipeMapper);
+
         author = new User();
         author.setId(1);
         author.setEmail("cocinera@pinch.com");
